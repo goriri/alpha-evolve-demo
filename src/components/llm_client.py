@@ -4,7 +4,7 @@ import abc
 import asyncio
 from collections.abc import Mapping, Sequence
 import concurrent.futures
-import os
+
 import random
 from typing import Any
 
@@ -55,20 +55,13 @@ class GenAILLMClient(BaseLLMClient):
 
   def __init__(
       self,
-      api_key: str | None = None,
       model_weights: Sequence[tuple[str, float]] = (
-          ('gemini-2.5-flash', 0.7),
+          ('gemini-2.5-flash', 0.8),
           ('gemini-2.5-pro', 0.2),
-          ('gemini-3-pro-preview', 0.1),
       ),
   ):
-    if api_key is None:
-      api_key = os.environ.get('GEMINI_API_KEY')
-    if not api_key:
-      raise ValueError(
-          'GEMINI_API_KEY environment variable not set and no api_key provided.'
-      )
-    self._client = genai.Client(api_key=api_key)
+    # Initialize client for Vertex AI using Application Default Credentials (ADC)
+    self._client = genai.Client(vertexai=True)
     self._model_weights = model_weights
 
   @override

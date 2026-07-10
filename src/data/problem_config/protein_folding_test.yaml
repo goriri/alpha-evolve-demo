@@ -1,0 +1,19 @@
+name: protein_folding_test
+problem_spec:
+  problem_description: |
+    Fold a protein sequence of H (hydrophobic) and P (polar) monomers on a 2D square lattice.
+    The goal is to maximize H-H contacts (adjacent H's on lattice that are not adjacent in the sequence).
+    The fold must be self-avoiding.
+  program_path: ./data/initial_programs/protein_folding.py
+  main_metric_name: hh_contacts
+
+budget:
+  num_llm_calls: 10
+  num_coroutines: 2
+
+modules:
+  database: GreedyDatabase
+  prompt_sampler: TemplatePromptSampler
+  llm: GenAILLMClient
+  evaluator: LocalEvaluator
+  logger: JSONLogger
