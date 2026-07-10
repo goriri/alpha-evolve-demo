@@ -1,0 +1,6 @@
+venv/
+scratch/
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+src/evolution_log.jsonl

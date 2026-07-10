@@ -1,0 +1,52 @@
+"""Copybara configuration for alphaevolve.
+
+This workflows defined in this copybara file should have been registered by
+mdb/deepmind-opensource-automation
+
+This can be verified with
+g3$ copybara info third_party/deepmind/alphaevolve/copy.bara.sky \
+      alphaevolve_postsubmit_piper_to_gob
+
+To export the code to a local directory (/tmp/alphaevolve),
+e.g. for testing, run:
+
+alias copybara=/google/bin/releases/copybara/public/copybara/copybara
+copybara third_party/deepmind/alphaevolve/copy.bara.sky \
+         alphaevolve_local .. --folder-dir=/tmp/alphaevolve
+"""
+
+load(
+    "//third_party/deepmind/automation_common",
+    "generate_local_workflow",
+    "generate_piper_sot_to_gerrit",
+)
+
+project_name = "alphaevolve"
+
+# Mapping from `{username: public_commit_attribution}` for authors who want
+# their CLs to be attributed to them in the public Git commit history. By
+# convention the values in the mapping are in the format:
+#
+# "Firstname Lastname <username@google.com>".
+#
+# Any CL authors who are *not* listed in this mapping will have their CLs
+# attributed to "DeepMind <noreply@google.com>" in the public Git commit
+# history. Email addresses are not checked for validity. It is possible to
+# associate a `noreply` email address with your GitHub account if you would like
+# the commits to be attributed to you without publishing your real email
+# address. See the GitHub documentation here for more details:
+# https://docs.github.com/en/account-and-profile/setting-up-and-managing-your-personal-account-on-github/managing-email-preferences/setting-your-commit-email-address#about-commit-email-addresses
+#
+# NOTE: Adding yourself to this mapping is entirely optional. Not every author
+# may wish for their name and email address appear in public, so if you are
+# adding someone else to this mapping, please check with them first.
+public_authors = {
+    "franrruiz": "Francisco Ruiz <franrruiz@google.com>",
+    "mehrabian": "Abbas Mehrabian <mehrabian@google.com>",
+}
+
+# Create workflow for local testing. To run this, see commands in the docstring.
+generate_local_workflow(project_name, public_authors)
+
+# Create workflow for Piper SoT to Gerrit.
+generate_piper_sot_to_gerrit(project_name, public_authors)

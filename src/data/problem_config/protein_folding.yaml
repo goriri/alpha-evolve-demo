@@ -1,0 +1,17 @@
+name: "protein_folding"
+
+problem_spec:
+  program_path: "data/initial_programs/protein_folding.py"
+  problem_description: "You are an expert biophysicist specializing in protein folding and lattice models. Your task is to improve the `fold_protein` function. This function takes a sequence of 'H' (Hydrophobic) and 'P' (Polar) monomers and must return a list of 2D coordinates representing a valid self-avoiding fold on a 2D square lattice. A fold is valid if all coordinates are distinct (no self-intersection) and consecutive monomers are adjacent (Manhattan distance of 1). The goal is to maximize the number of H-H contacts (non-consecutive H monomers that are adjacent on the lattice)."
+  main_metric_name: "hh_contacts"
+
+budget:
+  num_llm_calls: 50
+  num_coroutines: 2
+
+modules:
+  database: GreedyAndIslandsDatabase
+  prompt_sampler: TemplatePromptSampler
+  llm: GenAILLMClient
+  evaluator: LocalEvaluator
+  logger: JSONLogger

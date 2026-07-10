@@ -1,0 +1,145 @@
+# Format: google3/devtools/metadata/metadata.proto (go/google3metadata)
+
+name: "alphaevolve"
+
+description: "Open source code for AlphaEvolve and full mathematical results."
+
+third_party {
+  identifier {
+    type: "Piper"
+    value: "http://google3/third_party/deepmind/alphaevolve"
+    primary_source: true
+  }
+
+  central_automation_enabled: false
+}
+
+presubmit: {
+  path_expression: "//depot/google3/third_party/deepmind/alphaevolve/..."
+
+  # Ensures that the string "do not submit" (in all caps) is not present.
+  check_do_not_submit: {
+    action: SUBMIT
+  }
+
+  # Lint
+  check_lint: {
+    action: SUBMIT
+    failure_status: ERROR
+  }
+
+  # Show a NOTICE if the author's username doesn't appear in copy.bara.sky.
+  # This isn't a WARNING or an ERROR because it's entirely optional whether the
+  # author wants their real name or email address to appear in the public git
+  # history.
+  check_presubmit_service: {
+    address: "blade:check-contents-author-presubmit-service-prod"
+    options: "file_path: 'google3/third_party/deepmind/alphaevolve/copy.bara.sky'"
+    failure_status: NOTICE
+    base: {
+      disable_tags: "SKIP_COPYBARA_AUTHOR_CHECK"
+      disable_tags: "SKIP_COPYBARA_PRESUBMIT"
+    }
+  }
+
+  # Ensure that changes contain public notes for git commit messages.
+  check_description: {
+    required_regexp:
+      "("
+      "(^|\\n)\\s*BEGIN_PUBLIC\\s*?\\n"
+      "(.*\\n)*"
+      "\\s*\\S+.*(\\n.*)*\\n"
+      "\\s*END_PUBLIC\\s*?\\n"
+      "|"
+      "(^|\\n)\\s*PUBLIC:(?: )*\\S+"
+      ")"
+
+    failure_message:
+      "\n"
+      "CL descriptions for changes must contain public notes.\n"
+      "You can use either a single line or a block:\n"
+      "\n"
+      "PUBLIC: my public commit msg\n"
+      "\n"
+      "OR\n"
+      "\n"
+      "BEGIN_PUBLIC\n"
+      "my public\n"
+      "commit msg\n"
+      "END_PUBLIC\n"
+      "\n"
+      "If you're certain your change does not produce public changes, the\n"
+      "message can say 'Internal'.\n"
+  }
+}
+
+# Diff copybara changes, per http://go/copybara-service-config#diff-presubmit
+presubmit: {
+  path_regexp: "copy.bara.sky"
+  check_presubmit_service: {
+    base: {
+      id: "CopybaraServiceDiff"
+      disable_tags: "SKIP_COPYBARA_PRESUBMIT"
+    }
+    action: REVIEW
+    action: SUBMIT
+    include_deleted_files: true
+    include_all_opened_files: true
+    timeout: 120
+    failure_status: ERROR
+    registry_id: "copybara-diff"
+    options: "//depot/google3/third_party/deepmind/alphaevolve/copy.bara.sky"
+  }
+}
+
+# See go/copybara-piper-sot#declare-your-exports-in-metadata
+exported {
+  copybara {
+    config_path: "//depot/google3/third_party/deepmind/alphaevolve/copy.bara.sky"
+  }
+  owning_team_email: "franrruiz@google.com"
+  path_expression: "//depot/google3/third_party/deepmind/alphaevolve/..."
+  request_url: "b/466831402"
+  reason: OPEN_SOURCE
+  description: "Open source release for alphaevolve."
+}
+
+# See go/copybara-piper-sot#presubmit for details including how to disable
+# or skip these checks.
+presubmit: {
+  path_expression: "//depot/google3/third_party/deepmind/alphaevolve/..."
+  path_expression_exclusion: "//depot/.../METADATA"
+  path_expression_exclusion: "//depot/.../OWNERS"
+  path_expression_exclusion: "//depot/.../project.blueprint"
+  # Add more path exclusions here...
+  check_presubmit_service: {
+    base: {
+      id: "Copybara-Review"
+      disable_tags: "GIT_ORIGIN_REV_ID"
+      disable_tags: "SKIP_COPYBARA"
+    }
+    action: REVIEW
+    timeout: 30
+    failure_status: WARNING
+    execution_mode: SECONDARY_EXECUTION
+    include_all_opened_files: true
+    include_deleted_files: true
+    registry_id: "copybara-streaming"
+    options: "depot_path=//depot/google3/third_party/deepmind/alphaevolve/copy.bara.sky;workflow=alphaevolve_presubmit_piper_to_gerrit;blocking=false"
+  }
+  check_presubmit_service: {
+    base: {
+      id: "Copybara-Submit-copybara-presubmit"
+      disable_tags: "GIT_ORIGIN_REV_ID"
+      disable_tags: "SKIP_COPYBARA"
+    }
+    action: SUBMIT
+    timeout: 600
+    failure_status: ERROR
+    execution_mode: SECONDARY_EXECUTION
+    include_all_opened_files: true
+    include_deleted_files: true
+    registry_id: "copybara-streaming"
+    options: "depot_path=//depot/google3/third_party/deepmind/alphaevolve/copy.bara.sky;workflow=alphaevolve_presubmit_piper_to_gerrit;category_suffix=copybara_presubmit;blocking=true"
+  }
+}
