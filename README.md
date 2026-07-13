@@ -27,14 +27,24 @@ AlphaEvolve is used to evolve a python function `fold_protein` to find a conform
     ```
     *Note: We modified the requirements to use `LocalEvaluator` by default, which runs the code in local subprocesses, avoiding the need for Docker permissions.*
 
-2.  **Set your Gemini API Key:**
-    AlphaEvolve requires a Gemini API key to call the LLM.
+2.  **Set up Application Default Credentials (ADC):**
+    AlphaEvolve uses Vertex AI and requires ADC for authentication.
+    Ensure you have the Google Cloud SDK installed and run:
     ```bash
-    export GEMINI_API_KEY="your_api_key_here"
+    gcloud auth application-default login
     ```
-    You can get a key from [Google AI Studio](https://aistudio.google.com/).
+    This will configure your local environment to use your Google Cloud credentials.
 
 ## Running the Demo
+
+The entry point for running the evolution is `src/run.py`.
+
+### What `run.py` does:
+1.  **Loads Configuration**: It reads the YAML configuration file (e.g., `src/data/problem_config/protein_folding.yaml`) which defines the problem, LLM budget, and modules to use.
+2.  **Initializes AlphaEvolve**: It sets up the database, LLM client (using Vertex AI), and evaluator.
+3.  **Runs Evolution Loop**: It starts the evolutionary process, where the LLM is repeatedly prompted to improve the protein folding code.
+4.  **Local Evaluation**: Each LLM-generated code variant is executed locally to evaluate its performance (number of H-H contacts).
+5.  **Logging**: It logs every step (including code, scores, and LLM prompts) to `src/evolution_log.jsonl`.
 
 To run the evolution loop:
 

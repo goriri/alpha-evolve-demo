@@ -258,7 +258,7 @@ class LocalEvaluator(BaseEvaluator):
 
   _RESULT_SEPARATOR = '~~~~~~~RESULT_SEPARATOR~~~~~~~'
 
-  def __init__(self, timeout_seconds: int = 2000):
+  def __init__(self, timeout_seconds: int = 10):
     super().__init__(timeout_seconds)
 
   @override
