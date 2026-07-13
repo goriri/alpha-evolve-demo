@@ -2,9 +2,9 @@
 
 This repository demonstrates the capabilities of **AlphaEvolve** (Google DeepMind's evolutionary coding agent) for Healthcare and Life Sciences (HCLS) use cases.
 
-Specifically, it implements the **HP (Hydrophobic-Polar) Protein Folding model** on a 2D square lattice, which is a classic NP-complete optimization problem in computational biology.
+Specifically, it implements the **HP (Hydrophobic-Polar) Protein Folding model** on a 2D square lattice, which is a classic NP-complete optimization problem in computational biology. The goal is to fold a sequence of 'H' and 'P' monomers to maximize "H-H contacts" (non-consecutive H monomers adjacent on the grid), which represents the lowest energy state.
 
-AlphaEvolve is used to evolve a python function `fold_protein` to find a conformation that maximizes H-H contacts (minimizes energy) for a benchmark sequence.
+AlphaEvolve is used to evolve a python function `fold_protein` from a trivial baseline (straight line) into a sophisticated search heuristic that maximizes these contacts.
 
 ## Repository Structure
 
@@ -85,3 +85,13 @@ Open the notebook and run the cells.
 The notebook will show:
 1.  **Optimization Progress:** A plot showing how the number of H-H contacts improves over successive LLM calls.
 2.  **Best Fold Visualization:** A 2D plot of the folded protein, showing H (blue) and P (red) monomers, and highlighting the discovered H-H contacts (green dashed lines).
+3.  **Code Diff:** A git-style colored diff showing exactly how the evolved program improved upon the initial baseline.
+
+## Evolved Algorithmic Optimizations
+
+AlphaEvolve does not just find a static path; it evolves a **heuristic search algorithm** to solve the folding problem. Key optimizations typically discovered and implemented by the agent include:
+
+*   **Depth-First Search (DFS) Backtracking**: Transitioning from static layouts to systematic tree search.
+*   **Branch-and-Bound Pruning**: Precomputing remaining Hydrophobic (H) monomers to establish an upper bound on potential contacts. Branches that cannot beat the current best score are pruned immediately, preventing exponential search explosion.
+*   **Symmetry Breaking**: Restricting search directions at early steps (e.g., forcing the first turn) to avoid exploring redundant mirror-image conformations, which cuts the search space in half.
+*   **Heuristic Move Ordering**: Ordering search branches to prioritize moves that place Hydrophobic monomers adjacent to existing ones, finding high-quality folds much faster.
