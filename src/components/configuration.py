@@ -106,8 +106,13 @@ class Configuration:
 
 def from_yaml(yaml_config: str) -> Configuration:
   """Loads a configuration from a YAML file."""
+  import os
   config = yaml.safe_load(yaml_config)
-  with open(config['problem_spec'].pop('program_path'), mode='r') as f:
+  program_path = config['problem_spec'].pop('program_path')
+  if not os.path.isabs(program_path):
+    src_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    program_path = os.path.join(src_dir, program_path)
+  with open(program_path, mode='r') as f:
     initial_program = f.read()
   config['problem_spec']['initial_program'] = initial_program
 
