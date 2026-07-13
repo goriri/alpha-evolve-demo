@@ -88,9 +88,10 @@ def main(argv: Sequence[str]) -> None:
     code = (
         best_program.get("content", {}).get("files", [{}])[0].get("content")
     )
-    score = get_score(best_program, "hh_contacts")
+    metric_name = config.problem_spec.main_metric_name
+    score = get_score(best_program, metric_name)
     logging.info("Best program:\n%s", code)
-    logging.info("Best score (hh_contacts): %s", score)
+    logging.info("Best score (%s): %s", metric_name, score)
     
     # Save the best program to a file for visualization notebook to read if needed.
     # Currently the notebook might read from evolution_log.jsonl which we are not writing anymore.

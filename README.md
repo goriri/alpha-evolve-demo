@@ -1,21 +1,28 @@
-# AlphaEvolve HCLS Demo: HP Protein Folding
+# AlphaEvolve HCLS Demos
 
-This repository demonstrates the capabilities of **AlphaEvolve** (Google DeepMind's evolutionary coding agent) for Healthcare and Life Sciences (HCLS) use cases.
+This repository demonstrates the capabilities of **AlphaEvolve** (Google DeepMind's evolutionary coding agent) for Healthcare and Life Sciences (HCLS) use cases. It includes two optimization problems:
 
-Specifically, it implements the **HP (Hydrophobic-Polar) Protein Folding model** on a 2D square lattice, which is a classic NP-complete optimization problem in computational biology. The goal is to fold a sequence of 'H' and 'P' monomers to maximize "H-H contacts" (non-consecutive H monomers adjacent on the grid), which represents the lowest energy state.
+1.  **HP Protein Folding**: A classic NP-complete optimization problem where we evolve a heuristic to fold a Hydrophobic-Polar protein sequence on a 2D lattice to maximize stabilizing H-H contacts.
+2.  **Fast DNA Sequence Alignment**: A code-wise more complex problem with a larger LLM budget, where we evolve a heuristic local alignment algorithm that approximates the optimal Smith-Waterman score in sub-quadratic time (e.g. via adaptive banding or seed-and-extend).
 
-AlphaEvolve is used to evolve a python function `fold_protein` from a trivial baseline (straight line) into a sophisticated search heuristic that maximizes these contacts.
+---
 
 ## Repository Structure
 
 *   `src/`: Contains the evolution runner and configuration files.
     *   `src/run.py`: The entry point script.
-    *   `src/alpha_evolve_runner.py`: The runner implementation that integrates with the official AlphaEvolve SDK.
+    *   `src/alpha_evolve_runner.py`: The generic runner implementation that integrates with the official AlphaEvolve SDK.
     *   `src/gcp_setup.py`: Utility to automatically provision Discovery Engine resources.
-    *   `src/data/initial_programs/protein_folding.py`: The initial heuristic (straight line fold) and evaluation logic.
-    *   `src/data/problem_config/protein_folding.yaml`: Config file guiding the LLM and setting budget.
-*   `visualize_results.ipynb`: Jupyter notebook to visualize the optimization progress and the best found structure.
-*   `src/evolution_log_demo.jsonl`: Pre-run log file showing a successful demo run (used by the notebook as a fallback).
+    *   `src/data/initial_programs/`:
+        *   `protein_folding.py`: Initial straight-line fold heuristic and lattice evaluator.
+        *   `sequence_alignment.py`: Initial narrow banded SW heuristic and benchmark evaluator.
+    *   `src/data/problem_config/`:
+        *   `protein_folding.yaml`: Budget (50 calls) and config for protein folding.
+        *   `sequence_alignment.yaml`: Higher budget (100 calls) and config for sequence alignment.
+*   `visualize_results.ipynb`: Jupyter notebook to visualize Protein Folding results.
+*   `visualize_alignment.ipynb`: Jupyter notebook to visualize Sequence Alignment results.
+
+---
 
 ## Setup Instructions
 
@@ -28,7 +35,7 @@ AlphaEvolve is used to evolve a python function `fold_protein` from a trivial ba
     python3 -m venv venv
     source venv/bin/activate
     pip install --index-url https://pypi.org/simple -r src/requirements.txt
-    # Also install matplotlib and jupyter for the visualization notebook
+    # Also install matplotlib and jupyter for the visualization notebooks
     pip install --index-url https://pypi.org/simple matplotlib jupyter
     ```
     *Note: We use `LocalEvaluator` by default, which runs the code in local subprocesses, avoiding the need for Docker permissions.*
@@ -41,19 +48,14 @@ AlphaEvolve is used to evolve a python function `fold_protein` from a trivial ba
     ```
     This will configure your local environment to use your Google Cloud credentials.
 
-## Running the Demo
+---
+
+## Running the Demos
 
 The entry point for running the evolution is `src/run.py`.
 
-### What `run.py` does:
-1.  **Auto-Provisions GCP Resources**: It uses `gcp_setup.py` to check for and automatically create the required Discovery Engine instance and conversational Assistant in your GCP project.
-2.  **Loads Configuration**: It reads the YAML configuration file (e.g., `src/data/problem_config/protein_folding.yaml`).
-3.  **Initializes AlphaEvolve Client**: It connects to the Google Cloud AlphaEvolve service using the specified project and engine.
-4.  **Runs Evolution Loop**: It starts the evolutionary process using `run_controller_loop` from the official SDK, where mutated programs are evaluated in parallel.
-5.  **Local Evaluation**: Each generated code variant is executed locally via `LocalEvaluator` to count H-H contacts.
-6.  **Thread-Safe Logging**: Logs steps (code, scores) to `src/evolution_log.jsonl` using a thread lock to support parallel evaluation.
-
-To run the evolution loop:
+### Option 1: Run HP Protein Folding (Default Budget)
+This runs the evolution with a budget of 50 LLM calls.
 
 ```bash
 cd src
@@ -63,35 +65,57 @@ cd src
   --engine alpha-evolve-protein-folding
 ```
 
-Options:
+### Option 2: Run Fast DNA Sequence Alignment (Higher Budget)
+This runs the evolution with a higher budget of 100 LLM calls and concurrency of 4.
+
+```bash
+cd src
+../venv/bin/python run.py \
+  --problem_config ./data/problem_config/sequence_alignment.yaml \
+  --project YOUR_GCP_PROJECT_ID \
+  --engine alpha-evolve-sequence-alignment
+```
+
+### Options:
 *   `--problem_config`: Path to the config file (required).
 *   `--project`: GCP Project ID. Defaults to your active `gcloud` project.
-*   `--engine`: Discovery Engine ID. Defaults to `alpha-evolve-protein-folding`.
+*   `--engine`: Discovery Engine ID. Dedicated engine name is recommended for each problem.
 
-This will run for the configured number of steps (default 50) and output progress to the console and to `src/evolution_log.jsonl`.
+---
 
 ## Visualizing Results
 
 Start Jupyter Notebook:
 
 ```bash
-jupyter notebook visualize_results.ipynb
+jupyter notebook
 ```
 
-Open the notebook and run the cells.
-*   If you haven't run the evolution yet, the notebook will automatically load the pre-run `evolution_log_demo.jsonl` so you can see the results immediately.
-*   Once you run the evolution, the notebook will load your live results from `evolution_log.jsonl`.
+### 1. Visualizing Protein Folding
+Open `visualize_results.ipynb`. The notebook will show:
+*   **Optimization Progress:** A plot showing how the number of H-H contacts improves.
+*   **Best Fold Visualization:** A 2D plot of the folded protein showing H (blue) and P (red) monomers and H-H contacts (green dashed lines).
+*   **Code Diff:** A git-style colored diff comparing the evolved code to the baseline.
 
-The notebook will show:
-1.  **Optimization Progress:** A plot showing how the number of H-H contacts improves over successive LLM calls.
-2.  **Best Fold Visualization:** A 2D plot of the folded protein, showing H (blue) and P (red) monomers, and highlighting the discovered H-H contacts (green dashed lines).
-3.  **Code Diff:** A git-style colored diff showing exactly how the evolved program improved upon the initial baseline.
+### 2. Visualizing Sequence Alignment
+Open `visualize_alignment.ipynb`. The notebook will show:
+*   **Optimization Progress:** A plot showing how the alignment efficiency score (combining accuracy and speedup) improves.
+*   **Code Diff:** A git-style colored diff showing the heuristic improvements (e.g. adaptive banding, seed hashing).
+
+---
 
 ## Evolved Algorithmic Optimizations
 
-AlphaEvolve does not just find a static path; it evolves a **heuristic search algorithm** to solve the folding problem. Key optimizations typically discovered and implemented by the agent include:
+AlphaEvolve does not just find a static path; it evolves a **heuristic search algorithm** to solve these problems.
 
+### HP Protein Folding Optimizations
+Key optimizations typically discovered and implemented by the agent include:
 *   **Depth-First Search (DFS) Backtracking**: Transitioning from static layouts to systematic tree search.
-*   **Branch-and-Bound Pruning**: Precomputing remaining Hydrophobic (H) monomers to establish an upper bound on potential contacts. Branches that cannot beat the current best score are pruned immediately, preventing exponential search explosion.
-*   **Symmetry Breaking**: Restricting search directions at early steps (e.g., forcing the first turn) to avoid exploring redundant mirror-image conformations, which cuts the search space in half.
-*   **Heuristic Move Ordering**: Ordering search branches to prioritize moves that place Hydrophobic monomers adjacent to existing ones, finding high-quality folds much faster.
+*   **Branch-and-Bound Pruning**: Precomputing remaining Hydrophobic (H) monomers to establish an upper bound on potential contacts. Branches that cannot beat the current best score are pruned immediately.
+*   **Symmetry Breaking**: Restricting search directions at early steps to avoid exploring redundant mirror-image conformations.
+
+### Fast DNA Sequence Alignment Optimizations
+Key optimizations typically discovered and implemented by the agent include:
+*   **Adaptive Banding**: Dynamically shifting or widening the DP band based on sequence similarity or path scores.
+*   **Seed-and-Extend (BLAST-like)**: Indexing matching k-mers (seeds) first and performing dynamic programming only around these seeds.
+*   **Data Structure Optimization**: Replacing slow Python dictionaries with pre-allocated flat arrays or numpy arrays to speed up table lookups.

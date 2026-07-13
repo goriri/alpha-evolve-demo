@@ -1,0 +1,17 @@
+name: "sequence_alignment"
+
+problem_spec:
+  program_path: "data/initial_programs/sequence_alignment.py"
+  problem_description: "You are an expert bioinformatician. Your task is to improve the `align_sequences` function. This function takes two DNA sequences (strings of A, C, G, T) and must return their local alignment score (using match=+2, mismatch=-1, gap=-2). The goal is to maximize the alignment efficiency score, which rewards both accuracy (relative to the optimal Smith-Waterman score) and speedup (relative to the full O(N^2) Smith-Waterman). The baseline implementation uses a fixed banded Smith-Waterman which is fast but inaccurate for sequences with large insertions/deletions. You should implement a heuristic alignment algorithm (e.g. adaptive banding, seed-and-extend, or other sparse dynamic programming techniques) that maintains high accuracy (>= 90%) while achieving significant speedup."
+  main_metric_name: "alignment_efficiency"
+
+budget:
+  num_llm_calls: 100
+  num_coroutines: 4
+
+modules:
+  database: GreedyAndIslandsDatabase
+  prompt_sampler: TemplatePromptSampler
+  llm: GenAILLMClient
+  evaluator: LocalEvaluator
+  logger: JSONLogger
